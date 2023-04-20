@@ -17,8 +17,7 @@ ENVIRONMENT = "dev"
 name = "har-worker-staging"
 usage_model = "bundled"
 routes = [
-  { pattern = "https://*.har.staging.ai.moda/*", zone_name = "ai.moda" },
-  { pattern = "har.staging.ai.moda", custom_domain = true },
+  { pattern = "https://*.har.staging.aimoda.cloud/*", zone_name = "aimoda.cloud" },
 ]
 
 [env.staging.vars]
@@ -29,8 +28,7 @@ ENVIRONMENT = "staging"
 name = "har-worker"
 usage_model = "bundled"
 routes = [
-  { pattern = "https://*.har.ai.moda/*", zone_name = "ai.moda" },
-  { pattern = "har.ai.moda", custom_domain = true },
+  { pattern = "https://*.optic.aimoda.cloud/*", zone_name = "aimoda.cloud" },
 ]
 logpush = true
 
