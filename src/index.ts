@@ -50,9 +50,14 @@ app.use("*", async (c, next) => {
         : undefined,
   });
 
+  const cleaned_res_headers = new Headers(upstreamResponse.headers);
+  cleaned_res_headers.delete('cf-cache-status');
+  cleaned_res_headers.delete('cf-ray');
+  cleaned_res_headers.delete('server');
+
   // Copy the upstream response headers and status
   const responseHeaders: HAR.Header[] = [];
-  upstreamResponse.headers.forEach((value, name) => {
+  cleaned_res_headers.forEach((value, name) => {
     c.header(name, value);
     responseHeaders.push({ name, value });
   });
@@ -75,12 +80,10 @@ app.use("*", async (c, next) => {
 
   cleaned_req_headers.set('host', upstreamHost);
 
-
-
   const har: HAR.Log = {
     version: "1.2",
     creator: {
-      name: "Node.js HAR Generator",
+      name: "HAR Generator",
       version: "1.0.0",
     },
     entries: [
