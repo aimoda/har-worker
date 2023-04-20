@@ -1,0 +1,38 @@
+name = "har-worker-dev"
+main = "./src/index.ts"
+compatibility_date = "2023-04-20"
+usage_model = "unbound"
+workers_dev = false
+logpush = false
+
+[dev]
+ip = "127.0.0.1"
+local_protocol = "http"
+port = 54613
+
+[vars]
+ENVIRONMENT = "dev"
+
+[env.staging]
+name = "har-worker-staging"
+usage_model = "bundled"
+routes = [
+  { pattern = "https://*.har.staging.ai.moda/*", zone_name = "ai.moda" },
+  { pattern = "har.staging.ai.moda", custom_domain = true },
+]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+
+[env.production]
+name = "har-worker"
+usage_model = "bundled"
+routes = [
+  { pattern = "https://*.har.ai.moda/*", zone_name = "ai.moda" },
+  { pattern = "har.ai.moda", custom_domain = true },
+]
+logpush = true
+
+[env.production.vars]
+ENVIRONMENT = "production"
