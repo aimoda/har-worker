@@ -9,9 +9,7 @@ const app = new Hono<{ Bindings: Env; Variables: {} }>();
 
 app.use("*", logger());
 
-// c.header('Content-Security-Policy', "default-src 'none'; base-uri 'none'; sandbox allow-downloads; form-action 'none'; frame-ancestors 'none'; navigate-to 'none'; require-trusted-types-for 'script'")
-// c.header('X-Robots-Tag', 'noindex, nofollow, notranslate, noarchive, noimageindex, nosnippet, nositelinkssearchbox, nocache, nopagereadaloud')
-// c.header('cache-control', 'no-cache, no-store, private, no-transform, max-age=0, s-maxage=0')
+
 
 app.use("*", async (c, next) => {
   console.debug(`${c.req.headers.get("cf-connecting-ip")} [cf-connecting-ip]`);
@@ -62,8 +60,12 @@ app.use("*", async (c, next) => {
   // Copy the upstream response headers and status
   const responseHeaders: HAR.Header[] = [];
   cleaned_res_headers.forEach((value, name) => {
-    c.header(name, value);
     responseHeaders.push({ name, value });
+  });
+
+  // don't censor these headers
+  upstreamResponse.headers.forEach((value, name) => {
+    c.header(name, value);
   });
 
   // Send the upstream response body back to the client
@@ -214,6 +216,18 @@ app.use("*", async (c, next) => {
   //         },
   //     ],
   // };
+
+  c.header('Content-Security-Policy', "default-src 'none'; base-uri 'none'; sandbox; form-action 'none'; frame-ancestors 'none'; navigate-to 'none'; require-trusted-types-for 'script'")
+  c.header('X-Robots-Tag', 'noindex, nofollow, notranslate, noarchive, noimageindex, nosnippet, nositelinkssearchbox, nocache, nopagereadaloud')
+  c.header('cache-control', 'no-cache, no-store, private, no-transform, max-age=0, s-maxage=0')
+  c.header('content-disposition', 'attachment; filename=har.json')
+  c.header('x-frame-options', 'DENY');
+  c.header('x-content-type-options', 'nosniff');
+  c.header("Cross-Origin-Resource-Policy", "same-origin");
+	c.header("Cross-Origin-Opener-Policy", "same-origin");
+	c.header("Cross-Origin-Embedder-Policy", "require-corp");
+	c.header("Referrer-Policy", "no-referrer");
+  c.header('access-control-allow-origin', `https://${upstreamHost}`)
 
   return c.json(har);
 
