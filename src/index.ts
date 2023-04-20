@@ -2,13 +2,11 @@ type Env = {};
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import * as HAR from "har-format";
-import { prettyJSON } from "hono/pretty-json";
+import { bech32m } from "bech32";
 
 const app = new Hono<{ Bindings: Env; Variables: {} }>();
 
-let global;
 
-app.use("*", prettyJSON()); // With options: prettyJSON({ space: 4 })
 app.use("*", logger());
 
 // c.header('Content-Security-Policy', "default-src 'none'; base-uri 'none'; sandbox allow-downloads; form-action 'none'; frame-ancestors 'none'; navigate-to 'none'; require-trusted-types-for 'script'")
@@ -26,8 +24,14 @@ app.use("*", async (c, next) => {
 
   const url = new URL(c.req.url);
   const [leftmostSubdomain] = url.hostname.split(".");
-  // const upstreamHost = hexDecode(leftmostSubdomain);
-  const upstreamHost = "moda.enterprise.corellium.com";
+  const { prefix, words } = bech32m.decode(leftmostSubdomain, 63);
+  // return c.text("hello world");
+  const upstreamHost:string = new TextDecoder().decode(new Uint8Array(bech32m.fromWords(words)));
+
+  if(upstreamHost != "moda.enterprise.corellium.com") {
+    return c.text("Permission denied", 401);
+  }
+  // const upstreamHost = "moda.enterprise.corellium.com";
 
   const upstreamUrl = new URL(url.pathname, `https://${upstreamHost}`);
   upstreamUrl.search = url.search;
